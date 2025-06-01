@@ -1,0 +1,177 @@
+# Assignment-2-Classes-Objec// University Management System
+#include <iostream>
+#include <vector>
+#include <string>
+#include <limits>
+using namespace std;
+
+
+// ------------------------ Person Base Class ------------------------
+class Person {
+protected:
+    string name;
+    int age;
+    int ID;
+    string contactInfo;
+public:
+    Person(string name, int age, int ID, string contactInfo) : name(name), age(age), ID(ID), contactInfo(contactInfo) {}
+    virtual ~Person() {}
+
+    virtual void displayDetails() {
+        cout << "Name: " << name << ", Age: " << age << ", ID: " << ID << ", Contact: " << contactInfo << endl;
+    }
+
+    virtual double calculatePayment() { return 0.0; }
+};
+
+// ------------------------ Student Class ------------------------
+class Student : public Person {
+private:
+    string enrollmentDate;
+    string program;
+    double GPA;
+public:
+    Student(string name, int age, int ID, string contactInfo, string enrollmentDate, string program, double GPA)
+        : Person(name, age, ID, contactInfo), enrollmentDate(enrollmentDate), program(program), GPA(GPA) {}
+
+    void displayDetails() override {
+        Person::displayDetails();
+        cout << "Enrollment Date: " << enrollmentDate << ", Program: " << program << ", GPA: " << GPA << endl;
+    }
+
+    double calculatePayment() override {
+        return GPA > 3.5 ? 1000.0 : 500.0;
+    }
+};
+
+// ------------------------ Professor Class ------------------------
+class Professor : public Person {
+private:
+    string department;
+    string specialization;
+    string hireDate;
+public:
+    Professor(string name, int age, int ID, string contactInfo, string department, string specialization, string hireDate)
+        : Person(name, age, ID, contactInfo), department(department), specialization(specialization), hireDate(hireDate) {}
+
+    void displayDetails() override {
+        Person::displayDetails();
+        cout << "Department: " << department << ", Specialization: " << specialization << ", Hire Date: " << hireDate << endl;
+    }
+
+    double calculatePayment() override {
+        return 3000.0;
+    }
+};
+
+// ------------------------ Course Class ------------------------
+class Course {
+private:
+    string code;
+    string title;
+    int credits;
+    string description;
+public:
+    Course(string code, string title, int credits, string description) {
+        this->code = code;
+        this->title = title;
+        this->credits = (credits > 0 ? credits : 1);
+        this->description = description;
+    }
+};
+
+// ------------------------ Department Class ------------------------
+class Department {
+private:
+    string name;
+    string location;
+    double budget;
+public:
+    Department(string name, string location, double budget) {
+        this->name = name;
+        this->location = location;
+        this->budget = (budget >= 0 ? budget : 0);
+    }
+};
+
+// ------------------------ GradeBook Class ------------------------
+class GradeBook {
+private:
+    vector<pair<int, double>> grades; // student ID and grade
+public:
+    void addGrade(int studentID, double grade) {
+        grades.push_back({studentID, grade});
+    }
+
+    double calculateAverageGrade() {
+        double sum = 0;
+        for (auto g : grades) sum += g.second;
+        return grades.empty() ? 0 : sum / grades.size();
+    }
+
+    double getHighestGrade() {
+        double maxGrade = 0;
+        for (auto g : grades) if (g.second > maxGrade) maxGrade = g.second;
+        return maxGrade;
+    }
+
+    vector<int> getFailingStudents() {
+        vector<int> failing;
+        for (auto g : grades) if (g.second < 60) failing.push_back(g.first);
+        return failing;
+    }
+};
+
+// ------------------------ EnrollmentManager Class ------------------------
+class EnrollmentManager {
+private:
+    vector<pair<int, string>> enrollments; // student ID and course code
+public:
+    void enrollStudent(int studentID, string courseCode) {
+        enrollments.push_back({studentID, courseCode});
+    }
+
+    void dropStudent(int studentID, string courseCode) {
+        enrollments.erase(remove_if(enrollments.begin(), enrollments.end(),
+            [=](pair<int, string> p) { return p.first == studentID && p.second == courseCode; }), enrollments.end());
+    }
+
+    int getEnrollmentCount() {
+        return enrollments.size();
+    }
+};
+
+// ------------------------ Main Test Program ------------------------
+int main() {
+    // Test Persons
+    Student s1("Shrishti", 20, 24, "shrishti@example.com", "2023-09-01", "CS", 9.0);
+    Student s2("Bob", 22, 1002, "bob@example.com", "2023-09-01", "IT", 2.7);
+
+    Professor p1("Dr. Smith", 45, 2001, "smith@univ.com", "CS", "AI", "2010-01-15");
+
+    // Polymorphic behavior
+    vector<Person*> people = { &s1, &s2, &p1 };
+    for (Person* p : people) {
+        p->displayDetails();
+        cout << "Payment: $" << p->calculatePayment() << endl << endl;
+    }
+
+    // GradeBook Test
+    GradeBook gb;
+    gb.addGrade(1001, 85);
+    gb.addGrade(1002, 55);
+
+    cout << "Average Grade: " << gb.calculateAverageGrade() << endl;
+    cout << "Highest Grade: " << gb.getHighestGrade() << endl;
+    for (int id : gb.getFailingStudents()) cout << "Failing Student ID: " << id << endl;
+
+    // Enrollment Test
+    EnrollmentManager em;
+    em.enrollStudent(1001, "CS101");
+    em.enrollStudent(1002, "IT202");
+    cout << "Total Enrollments: " << em.getEnrollmentCount() << endl;
+    em.dropStudent(1002, "IT202");
+    cout << "Total Enrollments after drop: " << em.getEnrollmentCount() << endl;
+
+    return 0;
+}
